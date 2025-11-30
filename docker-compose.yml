@@ -1,0 +1,46 @@
+services:
+  # --- BANCO DE DADOS ---
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: Locadora
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  # --- BACKEND (SPRING BOOT) ---
+  backend:
+    image: murilodelesposte/locadora-backend:latest
+    container_name: springboot
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/Locadora
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # --- FRONTEND (React/Vite) ---
+  frontend:
+    image: murilodelesposte/locadora-react:latest
+    container_name: react
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+# --- REDE ---
+networks:
+  app-network:
+    driver: bridge
